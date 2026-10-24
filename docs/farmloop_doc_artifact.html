@@ -1,0 +1,769 @@
+<title>Farmloop Build Log</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#F5F7F2;
+    --surface:#FFFFFF;
+    --surface-2:#EEF2EA;
+    --text:#1B241C;
+    --text-2:#57645A;
+    --text-3:#7C8880;
+    --border:#DCE3D8;
+    --accent:#2E6B4E;
+    --accent-ink:#1F4A37;
+    --accent-soft:#E2EFE6;
+    --warn:#B0492E;
+    --warn-soft:#F6E4DD;
+    --ok:#2E6B4E;
+    --ok-soft:#E2EFE6;
+    --muted:#8A9490;
+    --muted-soft:#EEF0EC;
+    --code-bg:#182119;
+    --code-text:#E4EAE1;
+    --shadow: 0 1px 2px rgba(20,30,20,0.04), 0 8px 24px -12px rgba(20,30,20,0.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12160F;
+      --surface:#181D15;
+      --surface-2:#1F251B;
+      --text:#E7ECE3;
+      --text-2:#A4B0A0;
+      --text-3:#7C8877;
+      --border:#2B332A;
+      --accent:#78C89C;
+      --accent-ink:#A6DFC0;
+      --accent-soft:#213328;
+      --warn:#E39479;
+      --warn-soft:#3A241D;
+      --ok:#78C89C;
+      --ok-soft:#1E3227;
+      --muted:#8A9587;
+      --muted-soft:#232922;
+      --code-bg:#0E120D;
+      --code-text:#D9E2D5;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12160F;
+    --surface:#181D15;
+    --surface-2:#1F251B;
+    --text:#E7ECE3;
+    --text-2:#A4B0A0;
+    --text-3:#7C8877;
+    --border:#2B332A;
+    --accent:#78C89C;
+    --accent-ink:#A6DFC0;
+    --accent-soft:#213328;
+    --warn:#E39479;
+    --warn-soft:#3A241D;
+    --ok:#78C89C;
+    --ok-soft:#1E3227;
+    --muted:#8A9587;
+    --muted-soft:#232922;
+    --code-bg:#0E120D;
+    --code-text:#D9E2D5;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Source Sans 3", -apple-system, "Segoe UI", sans-serif;
+    font-size:16px;
+    line-height:1.6;
+  }
+  ::selection{ background:var(--accent-soft); color:var(--accent-ink); }
+
+  a{ color:var(--accent-ink); }
+
+  .shell{
+    display:grid;
+    grid-template-columns: 232px minmax(0,1fr);
+    gap:0;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  @media (max-width: 880px){
+    .shell{ grid-template-columns: 1fr; }
+  }
+
+  /* ---- Sidebar / TOC ---- */
+  .toc-wrap{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:28px 18px 28px 24px;
+    border-right:1px solid var(--border);
+  }
+  @media (max-width: 880px){
+    .toc-wrap{ position:static; height:auto; border-right:none; border-bottom:1px solid var(--border); padding:20px 24px; }
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:22px;
+  }
+  .brand-mark{
+    width:30px; height:30px; border-radius:8px;
+    background:var(--accent); color:var(--surface);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Fraunces", serif; font-weight:600; font-size:16px;
+    flex:none;
+  }
+  .brand-name{ font-weight:700; font-size:15px; letter-spacing:0.01em; }
+  .brand-sub{ font-size:11.5px; color:var(--text-3); margin-top:1px; }
+
+  .toc-list{ list-style:none; margin:0 0 22px; padding:0; }
+  .toc-list a{
+    display:block;
+    text-decoration:none;
+    color:var(--text-2);
+    font-size:13.5px;
+    padding:6px 8px;
+    border-radius:6px;
+    border-left:2px solid transparent;
+  }
+  .toc-list a:hover{ background:var(--surface-2); color:var(--text); }
+  .toc-list .toc-num{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px;
+    color:var(--muted);
+    margin-right:7px;
+  }
+
+  .toc-meta{
+    font-size:11.5px; color:var(--text-3);
+    border-top:1px solid var(--border);
+    padding-top:14px;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .theme-toggle{
+    margin-top:14px;
+    display:inline-flex;
+    align-items:center; gap:6px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-2);
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .theme-toggle:hover{ color:var(--text); }
+  .theme-toggle:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+
+  /* ---- Main ---- */
+  main{ padding:40px 44px 80px; min-width:0; }
+  @media (max-width: 880px){ main{ padding:32px 22px 64px; } }
+
+  header.hero{
+    margin-bottom:34px;
+    padding-bottom:26px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--accent-ink);
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:"Fraunces", serif;
+    font-weight:600;
+    font-size:clamp(30px,4vw,42px);
+    line-height:1.08;
+    margin:0 0 12px;
+    text-wrap:balance;
+    letter-spacing:-0.01em;
+  }
+  .lede{
+    font-size:16.5px;
+    color:var(--text-2);
+    max-width:62ch;
+    margin:0 0 20px;
+  }
+  .stack-row{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    padding:4px 9px;
+    border-radius:100px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-2);
+  }
+
+  .status-strip{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    margin-top:22px;
+  }
+  @media (max-width:640px){ .status-strip{ grid-template-columns:repeat(2,1fr); } }
+  .status-cell{
+    background:var(--surface);
+    padding:14px 16px;
+  }
+  .status-num{ font-family:"IBM Plex Mono",monospace; font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .status-label{ font-size:12px; color:var(--text-2); margin-top:2px; }
+
+  section{ margin-bottom:52px; scroll-margin-top:20px; }
+  .sec-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+  .sec-num{ font-family:"IBM Plex Mono",monospace; color:var(--muted); font-size:14px; }
+  h2{
+    font-family:"Fraunces", serif;
+    font-weight:600;
+    font-size:24px;
+    margin:0;
+    letter-spacing:-0.005em;
+  }
+  .sec-dek{ color:var(--text-2); font-size:14.5px; margin:6px 0 18px; max-width:64ch; }
+
+  h3{
+    font-family:"Source Sans 3", sans-serif;
+    font-weight:700;
+    font-size:15px;
+    margin:26px 0 10px;
+    color:var(--text);
+  }
+  p{ margin:0 0 14px; max-width:70ch; }
+  code{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.88em;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    padding:0.1em 0.4em;
+    border-radius:4px;
+    color:var(--accent-ink);
+  }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-text);
+    border-radius:10px;
+    padding:16px 18px;
+    overflow-x:auto;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13px;
+    line-height:1.65;
+    margin:0 0 16px;
+    box-shadow:var(--shadow);
+  }
+  pre code{ background:none; border:none; padding:0; color:inherit; }
+
+  .table-wrap{ overflow-x:auto; margin:0 0 18px; border:1px solid var(--border); border-radius:10px; }
+  table{ border-collapse:collapse; width:100%; font-size:13.5px; min-width:480px; }
+  th{
+    text-align:left;
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:600;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--text-2);
+    background:var(--surface-2);
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  td{
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+    color:var(--text);
+  }
+  tr:last-child td{ border-bottom:none; }
+  td code, td .mono{ font-size:12.5px; }
+  .mono{ font-family:"IBM Plex Mono", monospace; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px;
+    padding:3px 9px 3px 7px;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+  .pill::before{ content:""; width:6px; height:6px; border-radius:50%; }
+  .pill.ok{ background:var(--ok-soft); color:var(--ok); }
+  .pill.ok::before{ background:var(--ok); }
+  .pill.warn{ background:var(--warn-soft); color:var(--warn); }
+  .pill.warn::before{ background:var(--warn); }
+  .pill.muted{ background:var(--muted-soft); color:var(--text-2); }
+  .pill.muted::before{ background:var(--muted); }
+
+  .card-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
+  @media (max-width:640px){ .card-grid{ grid-template-columns:1fr; } }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .card-title{ font-weight:700; font-size:13.5px; margin-bottom:4px; display:flex; justify-content:space-between; gap:8px; align-items:center;}
+  .card p{ font-size:13px; color:var(--text-2); margin:0; }
+
+  ul.plain, ol.plain{ margin:0 0 16px; padding-left:22px; }
+  ul.plain li, ol.plain li{ margin-bottom:6px; font-size:14.5px; }
+
+  .callout{
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent);
+    background:var(--surface);
+    border-radius:0 10px 10px 0;
+    padding:12px 16px;
+    font-size:14px;
+    color:var(--text-2);
+    margin:0 0 18px;
+  }
+  .callout.warn{ border-left-color:var(--warn); }
+  .callout strong{ color:var(--text); }
+
+  /* ---- Checklist ---- */
+  .checklist-group{ margin-bottom:22px; }
+  .checklist-group h3{ margin-top:0; margin-bottom:10px; }
+  .check-item{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:9px 10px;
+    border-radius:8px;
+  }
+  .check-item:hover{ background:var(--surface-2); }
+  .check-item input[type="checkbox"]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:18px; height:18px;
+    flex:none;
+    margin-top:2px;
+    border:1.5px solid var(--muted);
+    border-radius:5px;
+    background:var(--surface);
+    cursor:pointer;
+    position:relative;
+  }
+  .check-item input[type="checkbox"]:checked{
+    background:var(--accent);
+    border-color:var(--accent);
+  }
+  .check-item input[type="checkbox"]:checked::after{
+    content:"";
+    position:absolute; left:5px; top:1px;
+    width:5px; height:9px;
+    border:solid var(--surface);
+    border-width:0 2px 2px 0;
+    transform:rotate(40deg);
+  }
+  .check-item label{ font-size:14.5px; cursor:pointer; }
+  .check-item.done label{ color:var(--text-3); text-decoration:line-through; text-decoration-color:var(--border); }
+  .check-note{ display:block; font-size:12.5px; color:var(--text-3); margin-top:2px; }
+
+  .progress-bar{
+    height:6px; border-radius:100px; background:var(--surface-2);
+    overflow:hidden; margin:6px 0 20px; border:1px solid var(--border);
+  }
+  .progress-fill{ height:100%; background:var(--accent); width:0%; transition:width .3s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-2); display:flex; justify-content:space-between; }
+
+  footer{
+    border-top:1px solid var(--border);
+    margin-top:10px;
+    padding-top:20px;
+    font-size:12.5px;
+    color:var(--text-3);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .progress-fill{ transition:none; }
+  }
+</style>
+
+<div class="shell">
+  <nav class="toc-wrap">
+    <div class="brand">
+      <div class="brand-mark">F</div>
+      <div>
+        <div class="brand-name">Farmloop</div>
+        <div class="brand-sub">Build log &amp; test guide</div>
+      </div>
+    </div>
+    <ul class="toc-list">
+      <li><a href="#overview"><span class="toc-num">00</span>Overview</a></li>
+      <li><a href="#backend"><span class="toc-num">01</span>Backend</a></li>
+      <li><a href="#mobile"><span class="toc-num">02</span>Mobile app</a></li>
+      <li><a href="#running"><span class="toc-num">03</span>Running it locally</a></li>
+      <li><a href="#status"><span class="toc-num">04</span>Status &amp; open items</a></li>
+      <li><a href="#checklist"><span class="toc-num">05</span>Testing checklist</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button">🌓 Toggle theme</button>
+    <div class="toc-meta" style="margin-top:14px;">
+      <span>Checkpoint: 2026-09-09</span>
+      <span>Work paused for manual testing</span>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero" id="overview">
+      <div class="eyebrow">Farm management system — build checkpoint</div>
+      <h1>Farmloop, documented so far</h1>
+      <p class="lede">
+        An integrated farm management app covering animals, crops, fish, and fungi
+        operations — a Django REST Framework backend and a Flutter mobile client, built
+        one feature at a time and verified against a real database and a real iOS
+        Simulator, not just a screenshot. This page is the checkpoint before manual
+        product testing begins.
+      </p>
+      <div class="stack-row">
+        <span class="chip">Django 6.1 · DRF</span>
+        <span class="chip">PostgreSQL</span>
+        <span class="chip">Celery + Beat</span>
+        <span class="chip">Flutter · Riverpod 3</span>
+        <span class="chip">go_router</span>
+        <span class="chip">JWT auth</span>
+        <span class="chip">Cloudinary · Stripe</span>
+      </div>
+
+      <div class="status-strip">
+        <div class="status-cell">
+          <div class="status-num">8</div>
+          <div class="status-label">Backend apps</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-num">4</div>
+          <div class="status-label">Mobile tabs shipped</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-num">6/7</div>
+          <div class="status-label">Team actions verified</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-num">2</div>
+          <div class="status-label">Features scaffolded, not built</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ BACKEND ============ -->
+    <section id="backend">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Backend</h2></div>
+      <p class="sec-dek">Django REST Framework, 8 apps, farm-scoped everything. Auth is JWT with social login plus a DEBUG-only dev login for testing without real OAuth credentials.</p>
+
+      <h3>Apps &amp; models</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>App</th><th>Models</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">core</td><td class="mono">UUIDModel, TimestampedModel, ArchivableModel</td><td>Shared abstract bases. Archive-not-delete via <code>ArchivableModel</code>.</td></tr>
+            <tr><td class="mono">accounts</td><td class="mono">User</td><td>Custom user (UUID PK), role + farm membership, social auth fields.</td></tr>
+            <tr><td class="mono">farms</td><td class="mono">Farm, Zone</td><td>A farm and its physical zones (coop, plot, storage…).</td></tr>
+            <tr><td class="mono">inventory</td><td class="mono">LivingInventoryItem, AnimalDetail, CropDetail, FishDetail, FungiDetail, HealthLogEntry, ProductionLogEntry, BreedingLogEntry</td><td>Base item + domain-specific detail row, plus append-only logs.</td></tr>
+            <tr><td class="mono">supplies</td><td class="mono">Supply, SupplyConsumptionGroup, ConsumptionLogEntry, SupplyForecast</td><td>Stock tracking, linkage to consuming inventory, consumption history, depletion forecasts.</td></tr>
+            <tr><td class="mono">schedules</td><td class="mono">Schedule, Occurrence</td><td>Recurring rule vs. individual task instance. Occurrence denormalizes title/urgency for offline rendering.</td></tr>
+            <tr><td class="mono">audit</td><td class="mono">AuditLogEntry</td><td>Immutable trail: actor, action, category, target, description.</td></tr>
+            <tr><td class="mono">notifications</td><td class="mono">DeviceToken, Notification</td><td>Push token registration + in-app notifications.</td></tr>
+            <tr><td class="mono">billing</td><td class="mono">SubscriptionEvent</td><td>Stripe subscription lifecycle events.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">User.Role</div>
+          <p class="mono">ADMIN · FARMHAND</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Farm.PlanTier</div>
+          <p class="mono">FREE · TIER_1 · TIER_2 · TIER_3</p>
+        </div>
+        <div class="card">
+          <div class="card-title">LivingInventoryItem.DomainType</div>
+          <p class="mono">ANIMAL · CROP · FISH · FUNGI</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Schedule / Occurrence urgency</div>
+          <p class="mono">URGENT · ROUTINE — occurrences also carry OVERDUE</p>
+        </div>
+      </div>
+
+      <h3>API surface — <span class="mono" style="font-weight:400;font-size:13px;">/api/v1/</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Endpoint</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">POST auth/social/google/, auth/social/apple/</td><td>Social login; invite-then-claim account matching.</td></tr>
+            <tr><td class="mono">POST auth/dev-login/</td><td><strong>DEBUG-only.</strong> Mints tokens for an existing user by email — no real OAuth needed.</td></tr>
+            <tr><td class="mono">POST auth/token/refresh/</td><td>JWT refresh.</td></tr>
+            <tr><td class="mono">GET/PATCH me/</td><td>Current user profile.</td></tr>
+            <tr><td class="mono">GET farm/, farm/modules/</td><td>Farm detail and enabled modules (animals/plants/fish/fungi).</td></tr>
+            <tr><td class="mono">/zones/</td><td>Farm zones CRUD (ViewSet).</td></tr>
+            <tr><td class="mono">GET team/, POST team/invite/, PATCH/DELETE team/&lt;id&gt;/</td><td>Team mgmt, Admin-only. DELETE detaches (<code>farm=None, role=None</code>), doesn't delete the account.</td></tr>
+            <tr><td class="mono">/inventory/ + .../health-log/, production-log/, breeding-log/</td><td>Living inventory CRUD + per-item logs.</td></tr>
+            <tr><td class="mono">/supplies/</td><td>Supply CRUD, stock, consumption (ViewSet).</td></tr>
+            <tr><td class="mono">/schedules/, /occurrences/</td><td>Recurring rules + task instances — powers the Triage feed.</td></tr>
+            <tr><td class="mono">GET audit/</td><td>Farm-scoped audit trail.</td></tr>
+            <tr><td class="mono">notifications/register-device/, notifications/, notifications/&lt;id&gt;/read/</td><td>Push tokens + in-app notifications.</td></tr>
+            <tr><td class="mono">billing/checkout-link/, billing/webhook/stripe/</td><td>Stripe checkout + webhook.</td></tr>
+            <tr><td class="mono">/api/schema/, /api/docs/</td><td>OpenAPI schema + Swagger UI.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Permissions</h3>
+      <p><span class="mono">apps/core/permissions.py</span> — <code>IsFarmMember</code> (any authenticated user with a farm), <code>IsFarmAdmin</code> (role must be ADMIN; gates team/audit/analytics/schedule editing), and <code>require_plan_tier(*tiers)</code>, a factory gating a view to specific subscription tiers independent of role.</p>
+
+      <h3>Background jobs — Celery Beat</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Schedule</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">generate_upcoming_occurrences</td><td>Daily, 01:00 UTC</td><td>Generates Occurrences from active Schedules, 21-day horizon. Idempotent — self-heals a missed run.</td></tr>
+            <tr><td class="mono">recompute_supply_forecasts</td><td>Daily, 02:00 UTC</td><td>Recomputes depletion forecasts from consumption history.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Management commands</h3>
+      <ul class="plain">
+        <li><code>manage.py seed_demo</code> — seeds a realistic demo farm, idempotent (owner + farmhand, 1 farm, 3 zones, 3 inventory items, 2 supplies, 3 recurring schedules with generated occurrences, 2 audit entries).</li>
+        <li><code>manage.py demo_token [email]</code> — prints a fresh JWT access token for Swagger's Authorize button. Omit the email for both demo users at once.</li>
+      </ul>
+    </section>
+
+    <!-- ============ MOBILE ============ -->
+    <section id="mobile">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Mobile app</h2></div>
+      <p class="sec-dek">Flutter + Riverpod 3, feature folders mirroring the backend apps. Bottom-nav shell built on <code>StatefulShellRoute.indexedStack</code>.</p>
+
+      <h3>Navigation</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tab</th><th>Route</th><th>Screen</th></tr></thead>
+          <tbody>
+            <tr><td>Triage</td><td class="mono">/</td><td><span class="mono">HomeScreen</span> — today's due/overdue occurrences, swipe-to-complete.</td></tr>
+            <tr><td>Inventory</td><td class="mono">/inventory, /inventory/:id</td><td><span class="mono">LivingInventoryScreen</span>, <span class="mono">InventoryDetailScreen</span> — tabbed by Animals/Plants/Fish/Fungi.</td></tr>
+            <tr><td>Supplies</td><td class="mono">/supplies, /supplies/:id</td><td><span class="mono">SuppliesScreen</span>, <span class="mono">SupplyDetailScreen</span>.</td></tr>
+            <tr><td>Team <span class="pill muted" style="margin-left:4px;">Admin only</span></td><td class="mono">/team</td><td><span class="mono">TeamAuditScreen</span> — Members + Activity tabs.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        The Team tab is hidden from the nav bar for Farmhands <em>and</em> the router redirects
+        away from <code>/team</code> for a non-admin deep link — defense in depth matching the
+        backend's own <code>IsFarmAdmin</code> gate.
+      </div>
+
+      <p>Login has two <strong>Dev Login</strong> buttons (DEBUG builds only) hitting the backend's <code>dev-login</code> endpoint directly:</p>
+      <ul class="plain">
+        <li><strong>Dev Login — Owner (Admin)</strong> → <span class="mono">owner@farmloop.demo</span></li>
+        <li><strong>Dev Login — Sam (Farmhand)</strong> → <span class="mono">sam@farmloop.demo</span></li>
+      </ul>
+
+      <h3>Feature status</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Auth (login, dev-login, token storage/refresh)</td><td><span class="pill ok">Verified</span></td></tr>
+            <tr><td>Triage / Home (occurrence feed, swipe-to-complete)</td><td><span class="pill ok">Verified</span></td></tr>
+            <tr><td>Living Inventory (list, detail, domain tabs)</td><td><span class="pill ok">Verified</span></td></tr>
+            <tr><td>Supplies (list, detail, stock)</td><td><span class="pill ok">Verified</span></td></tr>
+            <tr><td>Team — promote / demote / remove</td><td><span class="pill ok">Verified</span></td></tr>
+            <tr><td>Team — invite dialog</td><td><span class="pill warn">Needs manual test</span></td></tr>
+            <tr><td>Audit trail (Activity tab)</td><td><span class="pill ok">Verified</span></td></tr>
+            <tr><td><span class="mono">farm/</span> and <span class="mono">notifications/</span> feature folders</td><td><span class="pill muted">Scaffolded only — no UI</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>State management notes</h3>
+      <ul class="plain">
+        <li><code>AsyncValue.valueOrNull</code> doesn't exist in Riverpod 3.x — use <code>.value</code> directly (nullable in this version).</li>
+        <li>An action-only controller read solely via <code>.notifier</code> (never <code>.watch</code>'d) has nothing keeping it alive under default <code>autoDispose</code>, and can be disposed mid-mutation, silently dropping the <code>ref.invalidate()</code> that should refresh the UI. Every action controller here (<span class="mono">TeamActionsController</span>, <span class="mono">SupplyActionsController</span>, …) is marked <code>@Riverpod(keepAlive: true)</code> for exactly this reason.</li>
+      </ul>
+
+      <h3>Dev workflow quirks</h3>
+      <ul class="plain">
+        <li><strong>Web preview:</strong> <span class="mono">flutter run -d web-server</span> hangs in this sandbox (no Dart Debug Chrome Extension). Use <span class="mono">flutter build web --debug -o build/web</span> then serve with a static file server — wired into <span class="mono">.claude/launch.json</span>.</li>
+        <li><strong>iOS Simulator:</strong> tap coordinates are in device points, not screenshot pixels (iPhone 17 Pro: 402×874pt, screenshot-px→pt scale ≈2.3). There's real latency between a tap and the screenshot reflecting it — a screenshot alone isn't proof an action registered; mutating actions were re-verified directly against the backend.</li>
+      </ul>
+    </section>
+
+    <!-- ============ RUNNING IT ============ -->
+    <section id="running">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Running it locally</h2></div>
+      <p class="sec-dek">Backend needs PostgreSQL and Redis running locally.</p>
+
+      <h3>Backend</h3>
+      <pre><code>cd backend
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # fill in DATABASE_URL at minimum
+python manage.py migrate
+python manage.py seed_demo
+python manage.py runserver 0.0.0.0:8000</code></pre>
+      <p style="font-size:13.5px;color:var(--text-2);">Background jobs: <span class="mono">celery -A config worker -l info</span> and <span class="mono">celery -A config beat -l info</span>.</p>
+
+      <h3>Mobile — web preview</h3>
+      <pre><code>cd mobile
+flutter build web --debug -o build/web
+cd build/web &amp;&amp; python3 -m http.server 5050</code></pre>
+
+      <h3>Mobile — iOS Simulator</h3>
+      <pre><code>cd mobile
+flutter build ios --debug --simulator</code></pre>
+      <p style="font-size:13.5px;color:var(--text-2);">Install the built <span class="mono">.app</span> onto a booted simulator.</p>
+
+      <h3>Demo accounts</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Role</th><th>Email</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Admin (owner)</td><td class="mono">owner@farmloop.demo</td><td>Jane Farmer — sees the Team tab.</td></tr>
+            <tr><td>Farmhand</td><td class="mono">sam@farmloop.demo</td><td>Sam Rivers — no Team tab.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13.5px;color:var(--text-2);">Sign in with the <strong>Dev Login</strong> buttons — no real Google/Apple credentials needed.</p>
+    </section>
+
+    <!-- ============ STATUS ============ -->
+    <section id="status">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Status &amp; open items</h2></div>
+      <div class="callout warn">
+        <strong>Invite dialog (Team screen)</strong> — not verified via simulator automation. The
+        FAB tap didn't register across 7 calibrated attempts, while every other tap on the
+        same screen worked with the same calibration. Code review shows a standard
+        <code>showDialog</code>, consistent with the rest of the app — reads as an
+        automation-tool limitation, not an app bug, matching an earlier confirmed case with
+        the Triage swipe gesture. <strong>Needs a manual tap to confirm.</strong>
+      </div>
+      <ul class="plain">
+        <li><span class="mono">farm/</span> and <span class="mono">notifications/</span> mobile features are scaffolded folders only — no screens built yet.</li>
+        <li>No automated integration/E2E suite beyond <span class="mono">flutter analyze</span> / <span class="mono">flutter test</span> (unit-level) and manual backend-query verification during simulator testing.</li>
+        <li>The project is not yet under git version control.</li>
+      </ul>
+    </section>
+
+    <!-- ============ CHECKLIST ============ -->
+    <section id="checklist">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Manual testing checklist</h2></div>
+      <p class="sec-dek">For testing on your own device now that work is paused. Checks are saved locally in this browser.</p>
+
+      <div class="progress-label">
+        <span id="progressText">0 / 0 checked</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="checklist-group">
+        <h3>Auth</h3>
+        <div class="check-item"><input type="checkbox" id="c1"><label for="c1">Dev Login as Owner — lands on Triage, Team tab visible<span class="check-note">owner@farmloop.demo</span></label></div>
+        <div class="check-item"><input type="checkbox" id="c2"><label for="c2">Dev Login as Sam — lands on Triage, Team tab hidden<span class="check-note">sam@farmloop.demo</span></label></div>
+        <div class="check-item"><input type="checkbox" id="c3"><label for="c3">App relaunch keeps the session (token persists)</label></div>
+      </div>
+
+      <div class="checklist-group">
+        <h3>Triage</h3>
+        <div class="check-item"><input type="checkbox" id="c4"><label for="c4">Due/overdue occurrences list correctly for today</label></div>
+        <div class="check-item"><input type="checkbox" id="c5"><label for="c5">Swipe-to-complete works by hand, on device<span class="check-note">Known automation-tool limitation — this needs a real finger</span></label></div>
+        <div class="check-item"><input type="checkbox" id="c6"><label for="c6">Completing a supply-linked task deducts stock correctly</label></div>
+      </div>
+
+      <div class="checklist-group">
+        <h3>Inventory</h3>
+        <div class="check-item"><input type="checkbox" id="c7"><label for="c7">All four domain tabs load — Animals / Plants / Fish / Fungi</label></div>
+        <div class="check-item"><input type="checkbox" id="c8"><label for="c8">Item detail screen shows correct domain-specific fields and logs</label></div>
+      </div>
+
+      <div class="checklist-group">
+        <h3>Supplies</h3>
+        <div class="check-item"><input type="checkbox" id="c9"><label for="c9">Supply list shows current stock and reorder status</label></div>
+        <div class="check-item"><input type="checkbox" id="c10"><label for="c10">Supply detail shows consumption history</label></div>
+      </div>
+
+      <div class="checklist-group">
+        <h3>Team &amp; Audit <span class="pill muted" style="margin-left:6px;">Admin only</span></h3>
+        <div class="check-item"><input type="checkbox" id="c11"><label for="c11">Promote a farmhand to Admin, then demote back</label></div>
+        <div class="check-item"><input type="checkbox" id="c12"><label for="c12">Remove a member from the farm</label></div>
+        <div class="check-item"><input type="checkbox" id="c13"><label for="c13"><strong>Invite dialog:</strong> tap Invite, submit an email, confirm the new member appears<span class="check-note">Unverified by automation — priority check</span></label></div>
+        <div class="check-item"><input type="checkbox" id="c14"><label for="c14">Activity tab reflects the actions above with correct actor names and timestamps</label></div>
+        <div class="check-item"><input type="checkbox" id="c15"><label for="c15">Farmhand account cannot reach /team via deep link or nav</label></div>
+      </div>
+
+      <div class="checklist-group">
+        <h3>Cross-cutting</h3>
+        <div class="check-item"><input type="checkbox" id="c16"><label for="c16">Pull-to-refresh works on each list screen</label></div>
+        <div class="check-item"><input type="checkbox" id="c17"><label for="c17">Back navigation from every detail screen returns to the right list state</label></div>
+        <div class="check-item"><input type="checkbox" id="c18"><label for="c18">No crashes switching rapidly between all four tabs</label></div>
+      </div>
+    </section>
+
+    <footer>
+      Farmloop internal build log — generated from the current backend and mobile codebases. Not for external distribution.
+    </footer>
+  </main>
+</div>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var toggle = document.getElementById('themeToggle');
+    function apply(theme){
+      if(theme){ root.setAttribute('data-theme', theme); } else { root.removeAttribute('data-theme'); }
+    }
+    var saved = null;
+    try{ saved = localStorage.getItem('farmloop-doc-theme'); }catch(e){}
+    if(saved){ apply(saved); }
+    toggle.addEventListener('click', function(){
+      var current = root.getAttribute('data-theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var next;
+      if(!current){ next = prefersDark ? 'light' : 'dark'; }
+      else if(current === 'dark'){ next = 'light'; }
+      else { next = null; }
+      apply(next);
+      try{ next ? localStorage.setItem('farmloop-doc-theme', next) : localStorage.removeItem('farmloop-doc-theme'); }catch(e){}
+    });
+  })();
+
+  (function(){
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('.check-item input[type="checkbox"]'));
+    var STORE_KEY = 'farmloop-doc-checklist';
+    var state = {};
+    try{ state = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }catch(e){ state = {}; }
+
+    function save(){
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+    }
+    function updateProgress(){
+      var total = boxes.length;
+      var checked = boxes.filter(function(b){ return b.checked; }).length;
+      var pct = total ? Math.round((checked/total)*100) : 0;
+      document.getElementById('progressText').textContent = checked + ' / ' + total + ' checked';
+      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('progressFill').style.width = pct + '%';
+    }
+    boxes.forEach(function(box){
+      if(state[box.id]){ box.checked = true; box.closest('.check-item').classList.add('done'); }
+      box.addEventListener('change', function(){
+        state[box.id] = box.checked;
+        box.closest('.check-item').classList.toggle('done', box.checked);
+        save();
+        updateProgress();
+      });
+    });
+    updateProgress();
+  })();
+</script>

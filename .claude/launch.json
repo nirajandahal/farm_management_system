@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flutter-web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd mobile && flutter build web --debug -o build/web && cd build/web && python3 -m http.server 5050"
+      ],
+      "port": 5050
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd backend && .venv/bin/python manage.py runserver 0.0.0.0:8000"],
+      "port": 8000
+    }
+  ]
+}
